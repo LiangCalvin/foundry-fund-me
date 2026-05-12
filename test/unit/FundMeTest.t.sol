@@ -48,10 +48,7 @@ contract FundMeTest is Test {
         assertEq(amountFunded, SEND_VALUE);
     }
 
-    function testAddsFunderToArrayOfFunders() public {
-        vm.prank(USER);
-        fundMe.fund{value: SEND_VALUE}();
-
+    function testAddsFunderToArrayOfFunders() public funded {
         address funder = fundMe.getFunder(0);
         assertEq(funder, USER);
     }
@@ -67,10 +64,7 @@ contract FundMeTest is Test {
     }
 
     // เทสว่าคนอื่นถอนเงินไม่ได้
-    function testOnlyOwnerCanWithdraw() public {
-        vm.prank(USER);
-        fundMe.fund{value: SEND_VALUE}();
-
+    function testOnlyOwnerCanWithdraw() public funded {
         // ต้องพังเพราะ USER ไม่ใช่เจ้าของ
         vm.expectRevert();
         vm.prank(USER);
@@ -78,7 +72,7 @@ contract FundMeTest is Test {
     }
 
     // เทสการถอนเงินโดยเจ้าของ (แบบเบื้องต้น)
-    function testWithdrawWithASingleFunder() public {
+    function testWithdrawWithASingleFunder() public funded {
         // Arrange (เตรียมตัว)
         uint256 startingOwnerBalance = fundMe.i_owner().balance;
         uint256 startingFundMeBalance = address(fundMe).balance;
@@ -96,5 +90,13 @@ contract FundMeTest is Test {
             startingOwnerBalance + startingFundMeBalance,
             endingOwnerBalance
         );
+    }
+
+    function testWhoIsOwner() public {
+        console.log("Owner is:", fundMe.i_owner());
+        console.log("User is: ", USER);
+        console.log("Test Contract is:", address(this));
+
+        assertEq(fundMe.i_owner(), msg.sender); // ลองเช็คว่าใช่ตัว Test Contract ไหม
     }
 }
