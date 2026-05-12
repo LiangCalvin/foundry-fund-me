@@ -3,9 +3,9 @@ name: CI
 permissions: {}
 
 on:
-  push:
-  pull_request:
-  workflow_dispatch:
+# push:             # รันอัตโนมัติทุกครั้งที่มีการ Push code ขึ้น GitHub
+#   pull_request:     # รันอัตโนมัติเมื่อมีการเปิด Pull Request
+  workflow_dispatch: # เปิดปุ่มให้กดรันเองได้แบบ Manual
 
 jobs:
   check:
