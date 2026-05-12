@@ -4,6 +4,7 @@ pragma solidity 0.8.19;
 
 import {Test, console} from "forge-std/Test.sol";
 import {FundMe} from "../../src/FundMe.sol";
+import {DeployFundMe} from "../../script/DeployFundMe.s.sol";
 
 contract FundMeTest is Test {
     FundMe fundMe;
@@ -12,7 +13,8 @@ contract FundMeTest is Test {
     uint256 constant STARTING_BALANCE = 10 ether;
 
     function setUp() external {
-        fundMe = new FundMe();
+        DeployFundMe deployer = new DeployFundMe();
+        fundMe = deployer.run();
         vm.deal(USER, STARTING_BALANCE); // เติมเงินให้ User จำลอง
     }
     // 1. ทดสอบว่าเจ้าของ Contract คือคนที่สั่ง deploy (ก็คือตัว FundMeTest เอง)
