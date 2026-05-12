@@ -32,26 +32,63 @@ contract FundMeTest is Test {
         assertEq(version, 4);
     }
 
-    // function testPriceFeedVersionIsAccurate() public {
-    //     // ต้องรันด้วย --fork-url เท่านั้นถึงจะผ่าน
-    //     uint256 version = fundMe.getVersion();
-    //     assertEq(version, 4);
-    // }
+    // ตัวอย่างการปรับโค้ดใน Test ให้ตรงกับ FundMe.sol ล่าสุด
+    function testFundUpdatesFundedDataStructure() public {
+        vm.prank(USER);
+        fundMe.fund{value: SEND_VALUE}();
 
-    // function testFundUpdatesFundedDataStructure() public {
-    //     vm.prank(USER);
-    //     // การเรียก fund() จะไปเรียก getConversionRate() ซึ่งจะพังบน Anvil ธรรมดา
-    //     fundMe.fund{value: SEND_VALUE}();
+        // เรียกผ่าน public mapping ตรงๆ (Solidity จะสร้าง getter ให้โดยอัตโนมัติ)
+        uint256 amountFunded = fundMe.addressToAmountFunded(USER);
+        assertEq(amountFunded, SEND_VALUE);
+    }
 
-    //     uint256 amountFunded = fundMe.addressToAmountFunded(USER);
-    //     assertEq(amountFunded, SEND_VALUE);
-    // }
+    function testAddsFunderToArrayOfFunders() public {
+        vm.prank(USER);
+        fundMe.fund{value: SEND_VALUE}();
 
-    // function testAddsFunderToArrayOfFunders() public {
-    //     vm.prank(USER);
-    //     fundMe.fund{value: SEND_VALUE}();
+        address funder = fundMe.funders(0);
+        assertEq(funder, USER);
+    }
 
-    //     address funder = fundMe.funders(0);
-    //     assertEq(funder, USER);
-    // }
+    function testFundFailsWithoutEnoughETH() public {
+        // 1. เราจะใช้ Cheatcode 'vm.expectRevert'
+        // เพื่อบอก Foundry ว่า "ธุรกรรมบรรทัดถัดไปจะต้องพังนะ"
+        vm.expectRevert();
+
+        // 2. ส่งเงินไป 0 ETH (ซึ่งน้อยกว่า MINIMUM_USD แน่นอน)
+        // เนื่องจากไม่ได้ใส่ {value: ...} มันจะเป็น 0 โดยปริยาย
+        fundMe.fund();
+    }
+
+    // เทสว่าคนอื่นถอนเงินไม่ได้
+    function testOnlyOwnerCanWithdraw() public {
+        vm.prank(USER);
+        fundMe.fund{value: SEND_VALUE}();
+
+        // ต้องพังเพราะ USER ไม่ใช่เจ้าของ
+        vm.expectRevert();
+        vm.prank(USER);
+        fundMe.withdraw();
+    }
+
+    // เทสการถอนเงินโดยเจ้าของ (แบบเบื้องต้น)
+    function testWithdrawWithASingleFunder() public {
+        // Arrange (เตรียมตัว)
+        uint256 startingOwnerBalance = fundMe.i_owner().balance;
+        uint256 startingFundMeBalance = address(fundMe).balance;
+
+        // Act (กระทำ)
+        vm.prank(fundMe.i_owner());
+        fundMe.withdraw();
+
+        // Assert (ตรวจสอบ)
+        uint256 endingOwnerBalance = fundMe.i_owner().balance;
+        uint256 endingFundMeBalance = address(fundMe).balance;
+
+        assertEq(endingFundMeBalance, 0);
+        assertEq(
+            startingOwnerBalance + startingFundMeBalance,
+            endingOwnerBalance
+        );
+    }
 }
