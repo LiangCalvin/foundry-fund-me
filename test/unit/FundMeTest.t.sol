@@ -14,7 +14,7 @@ contract FundMeTest is Test {
 
     function setUp() external {
         DeployFundMe deployer = new DeployFundMe();
-        fundMe = deployer.run();
+        (fundMe, ) = deployer.run();
         vm.deal(USER, STARTING_BALANCE); // เติมเงินให้ User จำลอง
     }
     // 1. ทดสอบว่าเจ้าของ Contract คือคนที่สั่ง deploy (ก็คือตัว FundMeTest เอง)
