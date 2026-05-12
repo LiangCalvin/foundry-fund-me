@@ -38,7 +38,7 @@ contract FundMeTest is Test {
         fundMe.fund{value: SEND_VALUE}();
 
         // เรียกผ่าน public mapping ตรงๆ (Solidity จะสร้าง getter ให้โดยอัตโนมัติ)
-        uint256 amountFunded = fundMe.addressToAmountFunded(USER);
+        uint256 amountFunded = fundMe.getAddressToAmountFunded(USER);
         assertEq(amountFunded, SEND_VALUE);
     }
 
@@ -46,7 +46,7 @@ contract FundMeTest is Test {
         vm.prank(USER);
         fundMe.fund{value: SEND_VALUE}();
 
-        address funder = fundMe.funders(0);
+        address funder = fundMe.getFunder(0);
         assertEq(funder, USER);
     }
 
