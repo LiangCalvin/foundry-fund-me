@@ -12,6 +12,12 @@ contract FundMeTest is Test {
     uint256 constant SEND_VALUE = 0.1 ether;
     uint256 constant STARTING_BALANCE = 10 ether;
 
+    modifier funded() {
+        vm.prank(USER);
+        fundMe.fund{value: SEND_VALUE}();
+        _; // สัญลักษณ์นี้บอกให้กลับไปรันโค้ดในฟังก์ชัน Test ของเรา
+    }
+
     function setUp() external {
         DeployFundMe deployer = new DeployFundMe();
         (fundMe, ) = deployer.run();
