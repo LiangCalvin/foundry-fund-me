@@ -99,4 +99,32 @@ contract FundMeTest is Test {
 
         assertEq(fundMe.i_owner(), msg.sender); // ลองเช็คว่าใช่ตัว Test Contract ไหม
     }
+
+    function testWithdrawFromMultipleFunders() public funded {
+        // 1. Arrange (เตรียมการ)
+        uint160 numberOfFunders = 10;
+        uint160 startingFunderIndex = 1; // เริ่มที่ 1 เพราะบางครั้ง address(0) อาจมีปัญหา
+
+        for (uint160 i = startingFunderIndex; i < numberOfFunders; i++) {
+            // สร้าง address จำลอง: hoax คือการรวม vm.prank + vm.deal เข้าด้วยกัน
+            // ช่วยให้เราสร้าง user และให้เงินได้ในบรรทัดเดียว
+            hoax(address(i), SEND_VALUE);
+            fundMe.fund{value: SEND_VALUE}();
+        }
+
+        uint256 startingOwnerBalance = fundMe.i_owner().balance;
+        uint256 startingFundMeBalance = address(fundMe).balance;
+
+        // 2. Act (กระทำ)
+        vm.startPrank(fundMe.i_owner());
+        fundMe.withdraw();
+        vm.stopPrank();
+
+        // 3. Assert (ตรวจสอบ)
+        assertEq(address(fundMe).balance, 0);
+        assertEq(
+            startingOwnerBalance + startingFundMeBalance,
+            fundMe.i_owner().balance
+        );
+    }
 }
