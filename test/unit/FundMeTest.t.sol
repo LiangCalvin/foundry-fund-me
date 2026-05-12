@@ -19,7 +19,7 @@ contract FundMeTest is Test {
     }
     // 1. ทดสอบว่าเจ้าของ Contract คือคนที่สั่ง deploy (ก็คือตัว FundMeTest เอง)
     function testOwnerIsMsgSender() public {
-        assertEq(fundMe.i_owner(), address(this));
+        assertEq(fundMe.i_owner(), msg.sender);
     }
 
     // 2. ทดสอบว่าค่า Minimum USD ตั้งไว้ถูกต้อง (5 * 10^18)
