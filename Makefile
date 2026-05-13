@@ -11,3 +11,11 @@ deploy-sepolia:;
 	--verify \
 	--etherscan-api-key ${ETHERSCAN_API_KEY} \
 	-vvvv
+
+deploy-anvil:;
+	forge script script/DeployFundMe.s.sol:DeployFundMe \
+	--rpc-url ${ANVIL_RPC_URL} \
+	--account myWallet \
+	--sender ${ANVIL_PUBLIC_KEY} \
+	--broadcast \
+	-vvvv
