@@ -68,6 +68,30 @@ contract FundMe {
         }("");
         require(callSuccess, "Call failed");
     }
+
+    function cheaperWithdraw() public onlyOwner {
+        // 1. อ่านค่า Array จาก Storage มาไว้ใน Memory ครั้งเดียว (ช่วยประหยัด Gas มหาศาล)
+        address[] memory funders = s_funders;
+        uint256 fundersLength = funders.length;
+
+        // 2. วนลูปจาก Memory Array แทน
+        // หมายเหตุ: mappings ห้ามอยู่ใน memory ดังนั้นเรายังต้องเข้าถึง s_addressToAmountFunded (Storage) อยู่
+        for (
+            uint256 funderIndex = 0;
+            funderIndex < fundersLength;
+            funderIndex++
+        ) {
+            address funder = funders[funderIndex];
+            s_addressToAmountFunded[funder] = 0;
+        }
+
+        // 3. Reset Storage Array
+        s_funders = new address[](0);
+
+        // 4. ส่งเงินออก (เหมือนเดิม)
+        (bool callSuccess, ) = i_owner.call{value: address(this).balance}("");
+        require(callSuccess);
+    }
     // Explainer from: https://solidity-by-example.org/fallback/
     // Ether is sent to contract
     //      is msg.data empty?
